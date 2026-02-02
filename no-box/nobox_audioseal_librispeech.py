@@ -141,7 +141,7 @@ def decode_audio_files(model, output_dir, batch_size, txt_dir):
     total_ba = []
     total_probs = []
     total_counts = 0
-    file_list = [file for file in os.listdir(output_dir) if file.endswith('.wav')]
+    file_list = [file for file in os.listdir(output_dir) if file.endswith(('.mp3', '.wav'))]
     progress_bar = tqdm(enumerate(file_list), desc="Decoding Watermarks")
 
     detector = AudioSeal.load_detector("audioseal_detector_16bits").to(device=next(model.parameters()).device)
