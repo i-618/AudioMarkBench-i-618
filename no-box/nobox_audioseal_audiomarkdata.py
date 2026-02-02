@@ -40,6 +40,10 @@ def parse_arguments():
     parser.add_argument("--save_pert", action="store_true", help="If set, saves the perturbed waveform")
     parser.add_argument("--max_length", type=int, default=5*16000, help="Maximum length of audio samples to process (in time samples)")
     parser.add_argument("--batch_size", type=int, default=100, help="Maximum length of audio samples to process (in time samples)")
+    parser.add_argument("--data_dir", type=str, default="audiomarkdata/sample_20k", help="Directory containing the input audio files")
+    parser.add_argument("--output_dir", type=str, default="audiomarkdata_audioseal_max_5s", help="Directory to save the watermarked audio files")
+    parser.add_argument("--log_dir", type=str, default="log_audioseal_audiomarkdata_max_5s", help="Directory to save the perturbation logs")
+    parser.add_argument("--txt_dir", type=str, default="txt_audiomarkdata_AudioSeal", help="Directory to save the output text files")
     return parser.parse_args()
 
 def encode_audio_files(model, data_dir, output_dir, max_length):
@@ -133,7 +137,7 @@ def extract_id(filename):
     id_part = '_'.join(parts[:4])
     return id_part
 
-def decode_audio_files(model, output_dir, batch_size):
+def decode_audio_files(model, output_dir, batch_size, txt_dir):
     total_ba = []
     total_probs = []
     total_counts = 0
@@ -146,7 +150,7 @@ def decode_audio_files(model, output_dir, batch_size):
     batch_watermarked_signals = []
     original_msgs = []
     path_list = []
-    output_txt_dir = f'txt_audiomarkdata_AudioSeal/test'
+    output_txt_dir = os.path.join(txt_dir, 'test')
     os.makedirs(output_txt_dir, exist_ok=True)
     output_file = os.path.join(output_txt_dir, "decoding_results_AudioSeal.txt")
 
@@ -211,7 +215,7 @@ def decode_audio_files(model, output_dir, batch_size):
 
 
 
-def decode_audio_files_perturb(model, output_dir, common_perturbation, args):
+def decode_audio_files_perturb(model, output_dir, common_perturbation, args, log_dir, txt_dir):
     detector = AudioSeal.load_detector("audioseal_detector_16bits").to(device=next(model.parameters()).device)
     detector.eval()
     
@@ -224,7 +228,7 @@ def decode_audio_files_perturb(model, output_dir, common_perturbation, args):
             total_probs = []
             total_visqol_scores = []
             total_counts = 0
-            output_dir_pert = f'log_audioseal_audiomarkdata_max_5s/common_pert_time_stretch_speed_{speed_factor}'
+            output_dir_pert = os.path.join(log_dir, f'common_pert_time_stretch_speed_{speed_factor}')
             os.makedirs(output_dir_pert, exist_ok=True)
             file_list = [file for file in os.listdir(output_dir) if file.endswith('.wav')]
             progress_bar = tqdm(enumerate(file_list), desc=f"Applying {common_perturbation}")
@@ -235,7 +239,7 @@ def decode_audio_files_perturb(model, output_dir, common_perturbation, args):
             original_msgs = []
             path_list = []
             visqol = api_visqol()
-            output_txt_dir = f'txt_audiomarkdata_AudioSeal/no_box_attack'
+            output_txt_dir = f'{txt_dir}/no_box_attack'
             os.makedirs(output_txt_dir, exist_ok=True)
             output_file = os.path.join(output_txt_dir, f"time_stretch_{speed_factor}.txt")
 
@@ -315,7 +319,7 @@ def decode_audio_files_perturb(model, output_dir, common_perturbation, args):
             total_probs = []
             total_visqol_scores = []
             total_counts = 0
-            output_dir_pert = f'log_audioseal_audiomarkdata_max_5s/common_pert_{common_perturbation}_snr_{snr}'
+            output_dir_pert = os.path.join(log_dir, f'common_pert_{common_perturbation}_snr_{snr}')
             os.makedirs(output_dir_pert, exist_ok=True)
             file_list = [file for file in os.listdir(output_dir) if file.endswith('.wav')]
             progress_bar = tqdm(enumerate(file_list), desc=f"Applying {common_perturbation}")
@@ -326,7 +330,7 @@ def decode_audio_files_perturb(model, output_dir, common_perturbation, args):
             original_msgs = []
             path_list = []
             visqol = api_visqol()
-            output_txt_dir = f'txt_audiomarkdata_AudioSeal/no_box_attack'
+            output_txt_dir = f'{txt_dir}/no_box_attack'
             os.makedirs(output_txt_dir, exist_ok=True)
             if common_perturbation == "gaussian_noise":
                 output_file = os.path.join(output_txt_dir, f"gaussian_noise_snr_{snr}.txt")
@@ -413,7 +417,7 @@ def decode_audio_files_perturb(model, output_dir, common_perturbation, args):
             total_probs = []
             total_visqol_scores = []
             total_counts = 0
-            output_dir_pert = f'log_audioseal_audiomarkdata_max_5s/common_pert_{common_perturbation}_nq_{nq}'
+            output_dir_pert = os.path.join(log_dir, f'common_pert_{common_perturbation}_nq_{nq}')
             os.makedirs(output_dir_pert, exist_ok=True)
             file_list = [file for file in os.listdir(output_dir) if file.endswith('.wav')]
             progress_bar = tqdm(enumerate(file_list), desc=f"Applying {common_perturbation}")
@@ -424,7 +428,7 @@ def decode_audio_files_perturb(model, output_dir, common_perturbation, args):
             original_msgs = []
             path_list = []
             visqol = api_visqol()
-            output_txt_dir = f'txt_audiomarkdata_AudioSeal/no_box_attack'
+            output_txt_dir = f'{txt_dir}/no_box_attack'
             os.makedirs(output_txt_dir, exist_ok=True)
             output_file = os.path.join(output_txt_dir, f"soundstream_nq_{nq}.txt")
 
@@ -500,7 +504,7 @@ def decode_audio_files_perturb(model, output_dir, common_perturbation, args):
             total_probs = []
             total_visqol_scores = []
             total_counts = 0
-            output_dir_pert = f'log_audioseal_audiomarkdata_max_5s/common_pert_{common_perturbation}_bitrate_{bitrate*16}k'
+            output_dir_pert = os.path.join(log_dir, f'common_pert_{common_perturbation}_bitrate_{bitrate*16}k')
             os.makedirs(output_dir_pert, exist_ok=True)
             file_list = [file for file in os.listdir(output_dir) if file.endswith('.wav')]
             progress_bar = tqdm(enumerate(file_list), desc=f"Applying {common_perturbation}")
@@ -511,7 +515,7 @@ def decode_audio_files_perturb(model, output_dir, common_perturbation, args):
             original_msgs = []
             path_list = []
             visqol = api_visqol()
-            output_txt_dir = f'txt_audiomarkdata_AudioSeal/no_box_attack'
+            output_txt_dir = f'{txt_dir}/no_box_attack'
             os.makedirs(output_txt_dir, exist_ok=True)
             output_file = os.path.join(output_txt_dir, f"{common_perturbation}_bitrate_{bitrate}.txt")
 
@@ -599,7 +603,7 @@ def decode_audio_files_perturb(model, output_dir, common_perturbation, args):
             total_probs = []
             total_visqol_scores = []
             total_counts = 0
-            output_dir_pert = f'log_audioseal_audiomarkdata_max_5s/common_pert_{common_perturbation}_bandwidth_{bandwidth}'
+            output_dir_pert = os.path.join(log_dir, f'common_pert_{common_perturbation}_bandwidth_{bandwidth}')
             os.makedirs(output_dir_pert, exist_ok=True)
             encodec_cache = os.path.join(output_dir_pert, 'perturbed')
             os.makedirs(encodec_cache, exist_ok=True)
@@ -611,7 +615,7 @@ def decode_audio_files_perturb(model, output_dir, common_perturbation, args):
             batch_SNRs = []
             original_msgs = []
             path_list = []
-            output_txt_dir = f'txt_audiomarkdata_AudioSeal/no_box_attack'
+            output_txt_dir = f'{txt_dir}/no_box_attack'
             os.makedirs(output_txt_dir, exist_ok=True)
             output_file = os.path.join(output_txt_dir, f"{common_perturbation}_bandwidth_{bandwidth}.txt")
 
@@ -705,7 +709,7 @@ def decode_audio_files_perturb(model, output_dir, common_perturbation, args):
             total_probs = []
             total_visqol_scores = []
             total_counts = 0
-            output_dir_pert = f'log_audioseal_audiomarkdata_max_5s/common_pert_{common_perturbation}_quantization_bit_{quantization_bit}'
+            output_dir_pert = os.path.join(log_dir, f'common_pert_{common_perturbation}_quantization_bit_{quantization_bit}')
             os.makedirs(output_dir_pert, exist_ok=True)
             file_list = [file for file in os.listdir(output_dir) if file.endswith('.wav')]
             progress_bar = tqdm(enumerate(file_list), desc=f"Applying {common_perturbation}")
@@ -716,7 +720,7 @@ def decode_audio_files_perturb(model, output_dir, common_perturbation, args):
             original_msgs = []
             path_list = []
             visqol = api_visqol()
-            output_txt_dir = f'txt_audiomarkdata_AudioSeal/no_box_attack'
+            output_txt_dir = f'{txt_dir}/no_box_attack'
             os.makedirs(output_txt_dir, exist_ok=True)
             output_file = os.path.join(output_txt_dir, f"{common_perturbation}_quantization_bit_{quantization_bit}.txt")
 
@@ -794,7 +798,7 @@ def decode_audio_files_perturb(model, output_dir, common_perturbation, args):
             total_probs = []
             total_visqol_scores = []
             total_counts = 0
-            output_dir_pert = f'log_audioseal_audiomarkdata_max_5s/common_pert_{common_perturbation}_ratio_{ratio}'
+            output_dir_pert = os.path.join(log_dir, f'common_pert_{common_perturbation}_ratio_{ratio}')
             os.makedirs(output_dir_pert, exist_ok=True)
             file_list = [file for file in os.listdir(output_dir) if file.endswith('.wav')]
             progress_bar = tqdm(enumerate(file_list), desc=f"Applying {common_perturbation}")
@@ -805,7 +809,7 @@ def decode_audio_files_perturb(model, output_dir, common_perturbation, args):
             original_msgs = []
             path_list = []
             visqol = api_visqol()
-            output_txt_dir = f'txt_audiomarkdata_AudioSeal/no_box_attack'
+            output_txt_dir = f'{txt_dir}/no_box_attack'
             os.makedirs(output_txt_dir, exist_ok=True)
             output_file = os.path.join(output_txt_dir, f"{common_perturbation}_ratio_{ratio}.txt")
 
@@ -888,7 +892,7 @@ def decode_audio_files_perturb(model, output_dir, common_perturbation, args):
             total_probs = []
             total_visqol_scores = []
             total_counts = 0
-            output_dir_pert = f'log_audioseal_audiomarkdata_max_5s/common_pert_{common_perturbation}_window_size_{window_size}'
+            output_dir_pert = os.path.join(log_dir, f'common_pert_{common_perturbation}_window_size_{window_size}')
             os.makedirs(output_dir_pert, exist_ok=True)
             file_list = [file for file in os.listdir(output_dir) if file.endswith('.wav')]
             progress_bar = tqdm(enumerate(file_list), desc=f"Applying {common_perturbation}")
@@ -899,7 +903,7 @@ def decode_audio_files_perturb(model, output_dir, common_perturbation, args):
             original_msgs = []
             path_list = []
             visqol = api_visqol()
-            output_txt_dir = f'txt_audiomarkdata_AudioSeal/no_box_attack'
+            output_txt_dir = f'{txt_dir}/no_box_attack'
             os.makedirs(output_txt_dir, exist_ok=True)
             output_file = os.path.join(output_txt_dir, f"{common_perturbation}_window_size_{window_size}.txt")
 
@@ -977,7 +981,7 @@ def decode_audio_files_perturb(model, output_dir, common_perturbation, args):
             total_probs = []
             total_visqol_scores = []
             total_counts = 0
-            output_dir_pert = f'log_audioseal_audiomarkdata_max_5s/common_pert_{common_perturbation}_decay{decay}'
+            output_dir_pert = os.path.join(log_dir, f'common_pert_{common_perturbation}_decay{decay}')
             os.makedirs(output_dir_pert, exist_ok=True)
             file_list = [file for file in os.listdir(output_dir) if file.endswith('.wav')]
             progress_bar = tqdm(enumerate(file_list), desc=f"Applying {common_perturbation}")
@@ -988,7 +992,7 @@ def decode_audio_files_perturb(model, output_dir, common_perturbation, args):
             original_msgs = []
             path_list = []
             visqol = api_visqol()
-            output_txt_dir = f'txt_audiomarkdata_AudioSeal/no_box_attack'
+            output_txt_dir = f'{txt_dir}/no_box_attack'
             os.makedirs(output_txt_dir, exist_ok=True)
             output_file = os.path.join(output_txt_dir, f"{common_perturbation}_decay_{decay}.txt")
 
@@ -1067,7 +1071,7 @@ def decode_audio_files_perturb(model, output_dir, common_perturbation, args):
             total_SNRs = []
             total_visqol_scores = []
             total_counts = 0
-            output_dir_pert = f'log_audioseal_audiomarkdata_max_5s/common_pert_{common_perturbation}_bitrate_{bitrate}'
+            output_dir_pert = os.path.join(log_dir, f'common_pert_{common_perturbation}_bitrate_{bitrate}')
             os.makedirs(output_dir_pert, exist_ok=True)
             file_list = [file for file in os.listdir(output_dir) if file.endswith('.wav')]
             progress_bar = tqdm(enumerate(file_list), desc=f"Applying {common_perturbation}")
@@ -1078,7 +1082,7 @@ def decode_audio_files_perturb(model, output_dir, common_perturbation, args):
             original_msgs = []
             path_list = []
             visqol = api_visqol()
-            output_txt_dir = f'txt_audiomarkdata_AudioSeal/no_box_attack'
+            output_txt_dir = f'{txt_dir}/no_box_attack'
             os.makedirs(output_txt_dir, exist_ok=True)
             output_file = os.path.join(output_txt_dir, f"{common_perturbation}_bitrate_{bitrate}.txt")
 
@@ -1106,6 +1110,7 @@ def decode_audio_files_perturb(model, output_dir, common_perturbation, args):
                     batch_visqol_scores.append(score.moslqo)
                     waveform_pert = waveform_pert.unsqueeze(0).to(device=next(model.parameters()).device)
                     batch_watermarked_signals.append(waveform_pert)
+
                     if args.save_pert:
                         torchaudio.save(os.path.join(output_dir_pert, file), waveform_pert.squeeze(0).cpu().detach(), sample_rate)
 
@@ -1675,10 +1680,12 @@ def main():
         device = torch.device('cpu')
     model = AudioSeal.load_generator("audioseal_wm_16bits").to(device)
 
-    data_dir = "audiomarkdata/sample_20k" 
+    data_dir = args.data_dir
+    output_dir = args.output_dir
+    log_dir = args.log_dir
+    txt_dir = args.txt_dir
 
 
-    output_dir = f'audiomarkdata_audioseal_max_5s'
     dataset_dir = os.path.join(output_dir, 'watermarked')
     os.makedirs(output_dir, exist_ok=True)
     os.makedirs(dataset_dir, exist_ok=True)
@@ -1686,9 +1693,9 @@ def main():
     if args.encode:
         encode_audio_files(model, data_dir, output_dir, args.max_length)
     if args.common_perturbation != '':
-        decode_audio_files_perturb(model, dataset_dir, args.common_perturbation, args)
+        decode_audio_files_perturb(model, dataset_dir, args.common_perturbation, args, log_dir, txt_dir)
     else:
-        decode_audio_files(model, dataset_dir, args.batch_size)
+        decode_audio_files(model, dataset_dir, args.batch_size, txt_dir)
 
 if __name__ == "__main__":
     main()
