@@ -50,7 +50,7 @@ def encode_audio_files(model, data_dir, output_dir, max_length):
     total_ba = []
     total_counts = 0
     
-    file_list = [file for file in os.listdir(data_dir) if file.endswith('.mp3')]
+    file_list = [file for file in os.listdir(data_dir) if file.endswith(('.mp3', '.wav'))]
     for file in tqdm(file_list, desc="Encoding Watermarks"):
         file_path = os.path.join(data_dir, file)
         waveform, sample_rate = torchaudio.load(file_path)
