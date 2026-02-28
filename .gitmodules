@@ -4,6 +4,6 @@
 [submodule "wavmark"]
 	path = wavmark
 	url = https://github.com/wavmark/wavmark
-[submodule "TimbreWatermarking"]
-	path = TimbreWatermarking
-	url = https://github.com/TimbreWatermarking/TimbreWatermarking
+[submodule "TimbreWatermarking-ReadyToTrain"]
+	path = TimbreWatermarking-ReadyToTrain
+	url = https://github.com/i-618/TimbreWatermarking-ReadyToTrain
