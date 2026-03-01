@@ -1575,7 +1575,7 @@ def main():
     attention_heads_decoder = model_config["layer"]["attention_heads_decoder"]
     generator = Encoder(process_config, model_config, 30, win_dim, embedding_dim, nlayers_encoder=nlayers_encoder, attention_heads=attention_heads_encoder).to(device)
     detector = Decoder(process_config, model_config, 30, win_dim, embedding_dim, nlayers_decoder=nlayers_decoder, attention_heads=attention_heads_decoder).to(device)
-    checkpoint = torch.load('timbre/results/ckpt/pth/compressed_none-conv2_ep_20_2023-02-14_02_24_57.pth.tar')
+    checkpoint = torch.load('timbre/results/ckpt/pth/compressed_none-conv2_ep_20_2023-01-17_23_01_01.pth.tar')
     generator.load_state_dict(checkpoint['encoder'])
     detector.load_state_dict(checkpoint['decoder'], strict=False)
     generator.eval()
